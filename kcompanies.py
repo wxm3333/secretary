@@ -5,21 +5,18 @@
 
 import numpy as np
 import math
+import time as tm
 from random import random
-import matplotlib.pyplot as plt
 import scipy.stats
 from scipy.stats.stats import pearsonr
-from sklearn import linear_model
 
-iteration = 10000
+iteration = 50000
 # ordered k companies 
 def runk(n, ds):
     secretaries = np.random.rand(n)
     optimal = max(secretaries)
     ranks = scipy.stats.rankdata(secretaries, 'min')
     accepted = []
-    #for i in range(1, n):
-    #    ranks[i] = (sum(secretaries[:i] < secretaries[i]) + 1) / float(i+1)
     for d in ds:
         sample_n = int(n/d)
         rest_n = n - sample_n
@@ -38,46 +35,37 @@ def runk(n, ds):
     return [ranks[j]==n for j in accepted]
 
 # In[24]:
-
-dss = []
-meanss = []
+out = open('out.txt','w')
+dss = np.arange(1.5, 10, .1)
 def k_best_d(n, k):
-    best_ds = [2.7]
-    for i in range(k-1):
-        #print i
-        d = 1.5
-        ds = [d]
-        step = .2 + i/20.
-        count = 0
-        best_mean = 0  
-        best_d = 1.5
+    means_file = open('n_'+str(n)+'.txt','w')
+    best_ds = []
+    for i in range(k):
         means = []
-        while count<15 or best_d<3:
-            if d>n/15.:
+        for d in dss:
+            if (d>15 and d>n/10.) or d>30:
                 break
             result = np.array([runk(n, best_ds+[d]) for it in range(iteration)])
-            mean = result.mean(axis=0)[i+1]
-            #print mean
-            if mean > best_mean:
-                best_d = d
-                count = 1
-                best_mean = mean
-            else:
-                count += 1
-            ds.append(d)
+            mean = result.mean(axis=0)[i]
             means.append(mean)
-            d += step
-        best_ds.append(best_d)
-        dss.append(ds)
-        meanss.append(means)
+	if i == 0:
+	    means_file.write(','.join(str(x) for x in dss[:len(means)])+'\n')
+	means_file.write(','.join(str(x) for x in means)+'\n')
+	best_d = dss[np.argmax(means)]
+        best_ds.append(round(best_d, 1))
     return best_ds
         
 
 
 # In[16]:
-
-print k_best_d(300, 2)
-
+ns = [50, 100, 300, 500, 1000]
+for n in ns:
+    t = tm.time()
+    result = k_best_d(n, 10)
+    time = round((tm.time() - t)/60.,1)
+    print result
+    out.write(','.join(str(x) for x in [n]+result+[time])+'\n')
+out.close()
 
 ## In[20]:
 #
