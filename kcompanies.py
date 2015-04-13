@@ -36,7 +36,7 @@ def runk(n, ds):
 
 # In[24]:
 out = open('out.txt','w')
-dss = np.arange(1.5, 10, .1)
+dss = np.arange(1.1, 100, .1)
 def k_best_d(n, k):
     means_file = open('n_'+str(n)+'.txt','w')
     best_ds = []
