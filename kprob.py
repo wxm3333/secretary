@@ -40,7 +40,33 @@ def runpk(n, ds, ps):
 
 
 ds = np.arange(1.1, 20, .1)
-ps = np.arange(.02, .98, .05)
+ps = np.arange(.05, 1, .05)
+ns = [50, 100, 300, 500, 1000]
+group_ps = [.8, .4, .2, .1]
+
+out = open('k_prob_out.txt', 'w')
+out2 = open('k_prob_out_mean.txt', 'w')
+for n in ns[1:]:
+    best_ds = []
+    best_means = []
+    means_file = open('n_'+str(n)+'_group_'+str(group_ps[0])+'.txt','w')
+    means_file.write('prob,'+','.join(str(x) for x in ds)+'\n')
+    for i in range(1,5):
+	probs = group_ps[:i]
+	means = []
+	for d in ds:
+	    result = np.array([runpk(n, best_ds+[d], probs) for ite in range(iteration)])
+	    mean = result.mean(axis=0)[-1]
+	    means.append(mean)
+	means_file.write(','.join(str(x) for x in [probs[-1]]+means)+'\n')
+	best_means.append(max(means))
+	best_ds.append(round(ds[np.argmax(means)],1))
+    means_file.close()
+    out.write(','.join(str(x) for x in [n]+best_ds)+'\n')
+    out2.write(','.join(str(x) for x in [n]+best_means)+'\n')
+    print best_ds
+out.close()
+out2.close()
 
 def best_prob_1(n):
     mean1 = []
@@ -63,7 +89,6 @@ def best_prob_1(n):
 # In[16]:
 #out = open('out_prob.txt','w')
 #out.write('n,'+'.'.join([str(x) for x in ps])+'\n')
-ns = [50, 100, 300, 500, 1000]
 #for n in ns:
 #    t = tm.time()
 #    result = best_prob_1(n)
@@ -72,37 +97,37 @@ ns = [50, 100, 300, 500, 1000]
 #    out.write(','.join(str(x) for x in [n]+result+[time])+'\n')
 #out.close()
 
-read = open('out_prob.txt','r')
-read.readline()
-d1s = {}
-for line in read:
-    data = line.split(',')
-    n = int(data[0])
-    d1s[n] = [float(x) for x in data[1:]]
+#read = open('out_prob.txt','r')
+#read.readline()
+#d1s = {}
+#for line in read:
+#    data = line.split(',')
+#    n = int(data[0])
+#    d1s[n] = [float(x) for x in data[1:]]
+#
+#pp1s = np.arange(.52, 1, .1)
 
-pp1s = np.arange(.52, 1, .1)
-
-for n in ns[1:]:
-    out = open('n_'+str(n)+'_2prob'+'.txt', 'w')
-    out.write('pp1,'+','.join([str(x) for x in np.arange(.05, 1, .05)])+'\n')
-    for pp1 in pp1s:
-    	mean2 = []
-	idx = int(10+2*(pp1-.52)/.1)
-	pp2s = np.arange(.05, pp1, .05)
-	mean_file = open('n_'+str(n)+'_pp1_'+str(pp1)+'.txt', 'w')
-	mean_file.write('p,'+','.join([str(x) for x in ds])+'\n')
-	for pp2 in pp2s:
-	    d1 = d1s[n][idx]
-	    for d2 in ds:
-		result = np.array([runpk(n, [d1, d2], [pp1, pp2]) for i in range(iteration)])
-		mean = result.mean(axis=0)
-		mean2.append(mean[1])
-	b = np.array(mean2).reshape(len(pp2s), len(ds))
-	for i in range(len(pp2s)):
-	    mean_file.write(str(pp2s[i])+','+','.join([str(x) for x in b[i]])+'\n')
-	mean_file.close()
-	b_best = [round(ds[np.argmax(x)],1) for x in b]
-	out.write(','.join(str(x) for x in [pp1]+b_best)+'\n')
-	print b_best
-
-    out.close()
+#for n in ns[1:]:
+#    out = open('n_'+str(n)+'_2prob'+'.txt', 'w')
+#    out.write('pp1,'+','.join([str(x) for x in np.arange(.05, 1, .05)])+'\n')
+#    for pp1 in pp1s:
+#    	mean2 = []
+#	idx = int(10+2*(pp1-.52)/.1)
+#	pp2s = np.arange(.05, pp1, .05)
+#	mean_file = open('n_'+str(n)+'_pp1_'+str(pp1)+'.txt', 'w')
+#	mean_file.write('p,'+','.join([str(x) for x in ds])+'\n')
+#	for pp2 in pp2s:
+#	    d1 = d1s[n][idx]
+#	    for d2 in ds:
+#		result = np.array([runpk(n, [d1, d2], [pp1, pp2]) for i in range(iteration)])
+#		mean = result.mean(axis=0)
+#		mean2.append(mean[1])
+#	b = np.array(mean2).reshape(len(pp2s), len(ds))
+#	for i in range(len(pp2s)):
+#	    mean_file.write(str(pp2s[i])+','+','.join([str(x) for x in b[i]])+'\n')
+#	mean_file.close()
+#	b_best = [round(ds[np.argmax(x)],1) for x in b]
+#	out.write(','.join(str(x) for x in [pp1]+b_best)+'\n')
+#	print b_best
+#
+#    out.close()
