@@ -10,7 +10,7 @@ from random import random
 import scipy.stats
 from scipy.stats.stats import pearsonr
 
-iteration = 50
+iteration = 50000
 def runpk(n, ds, ps):
     secretaries = np.random.rand(n)
     ranks = scipy.stats.rankdata(secretaries, 'min')
@@ -81,17 +81,18 @@ for line in read:
     d1s[n] = [float(x) for x in data[1:]]
 
 pp1s = np.arange(.52, 1, .1)
+
 for n in ns[1:]:
-    mean2 = []
     out = open('n_'+str(n)+'_2prob'+'.txt', 'w')
     out.write('pp1,'+','.join([str(x) for x in np.arange(.05, 1, .05)])+'\n')
     for pp1 in pp1s:
-	i = ps.tolist().index(pp1)
+    	mean2 = []
+	idx = int(10+2*(pp1-.52)/.1)
 	pp2s = np.arange(.05, pp1, .05)
 	mean_file = open('n_'+str(n)+'_pp1_'+str(pp1)+'.txt', 'w')
 	mean_file.write('p,'+','.join([str(x) for x in ds])+'\n')
 	for pp2 in pp2s:
-	    d1 = d1s[n][i]
+	    d1 = d1s[n][idx]
 	    for d2 in ds:
 		result = np.array([runpk(n, [d1, d2], [pp1, pp2]) for i in range(iteration)])
 		mean = result.mean(axis=0)
