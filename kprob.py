@@ -39,21 +39,43 @@ def runpk(n, ds, ps):
 
 
 
-ds = np.arange(1.1, 20, .1)
+ds = np.arange(1.1, 30, .1)
 ps = np.arange(.05, 1, .05)
 ns = [50, 100, 300, 500, 1000]
 #group_ps = [.8, .6, .4, .2]
 group_ps = np.arange(.9, 0, -.1)
 
-out = open('k_prob_out4.txt', 'w')
-out2 = open('k_prob_out_mean4.txt', 'w')
-for n in ns[1:]:
-    best_ds = []
+#out = open('k_prob_out4.txt', 'w')
+#out2 = open('k_prob_out_mean4.txt', 'w')
+#for n in ns[1:]:
+#    best_ds = []
+#    best_means = []
+#    means_file = open('n_'+str(n)+'_group_'+str(9)+'.txt','w')
+#    means_file.write('prob,'+','.join(str(x) for x in ds)+'\n')
+#    for i in range(1,len(group_ps)+1):
+#	probs = group_ps[:i]
+#	means = []
+#	for d in ds:
+#	    result = np.array([runpk(n, best_ds+[d], probs) for ite in range(iteration)])
+#	    mean = result.mean(axis=0)[-1]
+#	    means.append(mean)
+#	means_file.write(','.join(str(x) for x in [probs[-1]]+means)+'\n')
+#	best_means.append(max(means))
+#	best_ds.append(round(ds[np.argmax(means)],1))
+#    means_file.close()
+#    out.write(','.join(str(x) for x in [n]+best_ds)+'\n')
+#    out2.write(','.join(str(x) for x in [n]+best_means)+'\n')
+#    print best_ds
+#out.close()
+#out2.close()
+
+def k_best(n, accept_probs):
     best_means = []
-    means_file = open('n_'+str(n)+'_group_'+str(9)+'.txt','w')
+    best_ds=[]
+    means_file = open('n_'+str(n)+'_kprob_'+';'.join([str(x) for x in accept_probs])+'.txt','w')
     means_file.write('prob,'+','.join(str(x) for x in ds)+'\n')
-    for i in range(1,len(group_ps)+1):
-	probs = group_ps[:i]
+    for i in range(len(best_ds)+1,len(accept_probs)+1):
+	probs = accept_probs[:i]
 	means = []
 	for d in ds:
 	    result = np.array([runpk(n, best_ds+[d], probs) for ite in range(iteration)])
@@ -63,13 +85,41 @@ for n in ns[1:]:
 	best_means.append(max(means))
 	best_ds.append(round(ds[np.argmax(means)],1))
     means_file.close()
-    out.write(','.join(str(x) for x in [n]+best_ds)+'\n')
-    out2.write(','.join(str(x) for x in [n]+best_means)+'\n')
-    print best_ds
-out.close()
-out2.close()
+    return best_ds, best_means
 
-def 
+def collude(n, best_p, rest_p):
+    best_ds, best_means = k_best(n, [best_p]+rest_p)
+    best_ds2, best_means2 = k_best(n, [sum(rest_p), best_p])
+    counts = [0]*(len(rest_p)+1)
+    trials = 100000
+    for ite in range(trials):
+	result = runpk(n, best_ds2, [sum(rest_p), best_p])
+	if result[1]:
+	    counts[-1] += 1
+	elif result[0]:
+	    rand = np.random.multinomial(1, rest_p)
+	    counts[rand.tolist().index(1)] += 1
+    success_probs = np.array(counts)/float(trials)
+    best_means = [round(x,4) for x in best_means]
+    success_probs = [round(x,4) for x in success_probs]
+    return best_means, [success_probs[-1]]+success_probs[:-1], best_ds
+
+best_ps = [.5, .6, .7, .8]
+rest_ps = [[.4,.3,.2,.1],[.4,.2,.1],[.4,.15]]
+this_n = 300
+out = open('collude_'+str(this_n)+'.txt','w')
+for best_p in best_ps:
+    for rest_p in rest_ps:
+	if sum(rest_p)<=best_p or best_p<=max(rest_p):
+	    continue
+	else:
+	    result = collude(this_n, best_p, rest_p)
+	    print result
+	    for r in result:
+		out.write(';'.join([str(x) for x in [best_p]+rest_p])+',')
+		out.write(','.join([str(x) for x in r])+'\n')
+out.close()
+    
 def best_prob_1(n):
     mean1 = []
     mean2 = []
