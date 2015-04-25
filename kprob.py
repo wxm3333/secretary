@@ -42,16 +42,17 @@ def runpk(n, ds, ps):
 ds = np.arange(1.1, 20, .1)
 ps = np.arange(.05, 1, .05)
 ns = [50, 100, 300, 500, 1000]
-group_ps = [.8, .6, .4, .2]
+#group_ps = [.8, .6, .4, .2]
+group_ps = np.arange(.9, 0, -.1)
 
-out = open('k_prob_out3.txt', 'w')
-out2 = open('k_prob_out_mean3.txt', 'w')
+out = open('k_prob_out4.txt', 'w')
+out2 = open('k_prob_out_mean4.txt', 'w')
 for n in ns[1:]:
     best_ds = []
     best_means = []
-    means_file = open('n_'+str(n)+'_group_'+str(group_ps[-1])+'.txt','w')
+    means_file = open('n_'+str(n)+'_group_'+str(9)+'.txt','w')
     means_file.write('prob,'+','.join(str(x) for x in ds)+'\n')
-    for i in range(1,5):
+    for i in range(1,len(group_ps)+1):
 	probs = group_ps[:i]
 	means = []
 	for d in ds:
@@ -68,6 +69,7 @@ for n in ns[1:]:
 out.close()
 out2.close()
 
+def 
 def best_prob_1(n):
     mean1 = []
     mean2 = []
