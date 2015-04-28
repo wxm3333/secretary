@@ -105,9 +105,9 @@ def collude(n, best_p, rest_p):
     return best_means, [success_probs[-1]]+success_probs[:-1], best_ds
 
 best_ps = [.5, .6, .7, .8]
-rest_ps = [[.4,.3,.2,.1],[.4,.2,.1],[.4,.15]]
+rest_ps = [[.4,.3,.2],[.4,.3,.1],[.5,.4]]
 this_n = 300
-out = open('collude_'+str(this_n)+'.txt','w')
+out = open('collude_'+str(this_n)+'_2.txt','w')
 for best_p in best_ps:
     for rest_p in rest_ps:
 	if sum(rest_p)<=best_p or best_p<=max(rest_p):
